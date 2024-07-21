@@ -6,7 +6,7 @@ resource "aws_apigatewayv2_api" "main" {
 resource "aws_apigatewayv2_integration" "main" {
   api_id           = aws_apigatewayv2_api.main.id
   integration_type = var.integration_type
-  integration_uri  = var.lambda_arn
+  integration_uri  = var.integration_uri
 }
 
 resource "aws_apigatewayv2_route" "main" {
@@ -32,10 +32,10 @@ resource "aws_apigatewayv2_stage" "example" {
   deployment_id = aws_apigatewayv2_deployment.main.id
 }
 
-resource "aws_lambda_permission" "main" {
-  action        = "lambda:InvokeFunction"
-  function_name = var.lambda_name
-  principal     = "apigateway.amazonaws.com"
+# resource "aws_lambda_permission" "main" {
+#   action        = "lambda:InvokeFunction"
+#   function_name = var.lambda_name
+#   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
-}
+#   source_arn = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+# }

@@ -1,8 +1,8 @@
 output "lambda_helloworld" {
-  value = module.apigateway-lambda-helloworld.api_endpoint
+  value = module.apigateway_helloworld.api_endpoint
 }
 output "lambda_putitem" {
-  value = module.apigateway-lambda-putitem.api_endpoint
+  value = module.apigateway_putitem.api_endpoint
 }
 module "iam_role_exec_lambda" {
   source    = "./modules/iam_role"
@@ -51,44 +51,58 @@ module "dynamodb_table" {
     },
   ]
 }
-module "lambda_hello_world" {
+module "lambda_helloworld" {
   source              = "./modules/lambda"
-  function_name       = "lambda_hello_world"
+  function_name       = "lambda_helloworld"
   archive_source_dir  = "./lambda_functions/source/helloworld/"
   archive_output_path = "./lambda_functions/helloworld.zip"
   exec_role_arn       = module.iam_role_exec_lambda.arn
   runtime             = "nodejs20.x"
 }
 
-module "lambda_put_item" {
+module "lambda_putitem" {
   source              = "./modules/lambda"
-  function_name       = "lambda_put_item"
+  function_name       = "lambda_putitem"
   archive_source_dir  = "./lambda_functions/source/putitem/"
   archive_output_path = "./lambda_functions/putitem.zip"
   exec_role_arn       = module.iam_role_exec_lambda.arn
   runtime             = "nodejs20.x"
 }
 
-module "apigateway-lambda-helloworld" {
-  source           = "./modules/apigateway-lambda"
-  api_name         = "hello-world-api"
+module "apigateway_helloworld" {
+  source           = "./modules/apigateway"
+  api_name         = "helloworld-api"
   protocol_type    = "HTTP"
   integration_type = "AWS_PROXY"
-  lambda_arn       = module.lambda_hello_world.arn
+  integration_uri  = module.lambda_helloworld.arn
   route_key        = "GET /helloworld"
   description      = "hello world api"
-  lambda_name      = module.lambda_hello_world.function_name
   stage_name       = "dev"
 }
 
-module "apigateway-lambda-putitem" {
-  source           = "./modules/apigateway-lambda"
-  api_name         = "put-item-api"
+module "apigateway_putitem" {
+  source           = "./modules/apigateway"
+  api_name         = "putitem-api"
   protocol_type    = "HTTP"
   integration_type = "AWS_PROXY"
-  lambda_arn       = module.lambda_put_item.arn
+  integration_uri  = module.lambda_putitem.arn
   route_key        = "POST /putitem"
   description      = "put item api"
-  lambda_name      = module.lambda_put_item.function_name
   stage_name       = "dev"
+}
+
+module "lambda_permission_helloworld" {
+  source               = "./modules/lambda_permission"
+  policy_statement_id  = "AllowExecutionFromAPIGatewayHelloworld"
+  lambda_function_name = module.lambda_helloworld.function_name
+  principal            = "apigateway.amazonaws.com"
+  source_arn           = "${module.apigateway_helloworld.execution_arn}/*/*"
+}
+
+module "lambda_permission_putitem" {
+  source               = "./modules/lambda_permission"
+  policy_statement_id  = "AllowExecutionFromAPIGatewayPutItem"
+  lambda_function_name = module.lambda_putitem.function_name
+  principal            = "apigateway.amazonaws.com"
+  source_arn           = "${module.apigateway_putitem.execution_arn}/*/*"
 }

@@ -15,6 +15,11 @@ variable "integration_type" {
   default     = "AWS_PROXY"
 }
 
+variable "integration_uri" {
+  description = "統合URI"
+  type        = string
+}
+
 variable "route_key" {
   description = "ルートキー"
   type        = string
@@ -27,15 +32,5 @@ variable "description" {
 
 variable "stage_name" {
   description = "ステージ名"
-  type        = string
-}
-
-variable "lambda_arn" {
-  description = "LambdaのARN"
-  type        = string
-}
-
-variable "lambda_name" {
-  description = "Lambdaの名前"
   type        = string
 }
